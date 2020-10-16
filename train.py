@@ -47,7 +47,7 @@ def arg_parse(av, ARGS):
 	return ARGS
 
 
-def zscore(x):
+def stdscaler(x):
 	if len(x.shape) == 1:
 		x = x.reshape(-1, 1)
 		zs = x - x.mean()
@@ -59,7 +59,7 @@ def zscore(x):
 		zs = np.array(new_array)
 	return zs
 
-def minmax(x):
+def minmaxscaler(x):
 	x = x.reshape(-1, 1)
 	min, max = np.percentile(x, [5, 95])
 	mnmx = (x - min) / (max - min)
