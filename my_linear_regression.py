@@ -10,25 +10,30 @@ def add_intercept(x):
 	return result
 
 class MyLinearRegression():
-	def __init__(self, thetas=[0, 0], alpha=0.00015, n_cycle=100000):
+	def __init__(self, thetas=[0, 0], alpha=0.00015, n_cycle=100000, visual=False):
 		self.alpha = alpha
 		self.theta = np.array(thetas).reshape(-1, 1)
 		self.n_cycle = n_cycle
-		self.graph = None
+		self.visual = visual
 		self.cost = []
 		self.plot = PlotMyLinearRegression()
 
 	def gradient(self, x, y):
 		m = x.shape[0]
 		gradient = (x.T @ ((x @ self.theta) - y)) / m
+		# print(gradient)
 		return gradient
+
+	def plot_results(self, x, y):
+		self.plot.plot_results(x, y, self.predict(x), self.theta)
 
 	def fit_routine(self, x, y, i):
 		# print(i * 100 / self.n_cycle, "%")
 		# if x.shape[1] > 1:
 		# if not i % (update * 5):
-		self.cost.append(self.mse_((add_intercept(x) @ self.theta), y).mean())
-		self.plot.multi_plot(x, y, self.predict(x), self.theta, self.cost)
+		self.cost.append(self.mse_(self.predict(x), y).sum())
+		if self.visual:
+			self.plot.multi_plot(x, y, self.predict(x), self.theta, self.cost)
 		# else:
 		# 	self.plot(x, y)
 		# print(self.theta)
@@ -38,14 +43,16 @@ class MyLinearRegression():
 	def fit(self, x, y):
 		update = self.n_cycle // 100
 		self.cost = []
-		self.plot.init_plot(x, y)
+		if self.visual:
+			self.plot.init_plot(x, y)
 		x_ = add_intercept(x)
 		for i in ft_progress(self.n_cycle + 1):
 			if not i % update * 5:
 				self.fit_routine(x, y, i)
 			theta_ = self.gradient(x_, y) * self.alpha
 			self.theta = self.theta - theta_
-		self.plot.close_plot()
+		if self.visual:
+			self.plot.close_plot()
 		return self.theta
 
 	def mse_(self, y, y_hat):
