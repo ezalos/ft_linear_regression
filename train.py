@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import pickle
 from my_linear_regression import MyLinearRegression
+from preprocessing import Preprocessing
 import matplotlib.pyplot as plt
 
 class DotDict(dict):
@@ -22,58 +23,72 @@ def usage():
 	usage_message += "usage: " + "python3 " + sys.argv[0] + " "
 	usage_message += " [-v or --visual] "
 	usage_message += " [-h or --help] "
+	usage_message += " [-s or --scaler AND minmax or std ] "
+	usage_message += " [-p or --polynomial] "
+	usage_message += " [-a or --alpha] "
+	usage_message += " [-n or --n_cycle] "
 	usage_message += " [-f or --file] "
 	usage_message += "\"path/data.csv\""
 	print(usage_message)
 
-def arg_parse(av, ARGS):
-	for arg in av:
-		if arg == "-v" or arg == "--visual":
+def arg_parse(arg, ARGS):
+	i = 0
+	ac = len(arg)
+	err = False
+	while i < ac and err == False:
+		if arg[i] == "-v" or arg[i] == "--visual":
 			ARGS.visual = True
-		elif arg == "-h" or arg == "--help":
+		elif arg[i] == "-h" or arg[i] == "--help":
 			ARGS.help = True
-		elif arg == "-l" or arg == "--load":
+		elif arg[i] == "-a" or arg[i] == "--alpha":
+			i += 1
+			if i < ac:
+				try:
+					ARGS.alpha = float(arg[i])
+				except:
+					err = True
+					print("Error, Alpha must be float: ", arg[i])
+			else:
+				print("Error: Alpha value")
+		elif arg[i] == "-n" or arg[i] == "--n_cycle":
+			i += 1
+			if i < ac:
+				try:
+					ARGS.n_cycle = int(arg[i])
+				except:
+					err = True
+					print("Error, n_cycle must be int: ", arg[i])
+			else:
+				print("Error: Alpha value")
+		elif arg[i] == "-l" or arg[i] == "--load":
+			ARGS.load = True
+		elif arg[i] == "-s" or arg[i] == "--scaler":
+			i += 1
+			if i < ac:
+				if arg[i] == "minmax" or arg[i] == "std":
+					ARGS.scaler = arg[i]
+				else:
+					print("Error, Bad scaler type: ", arg[i])
+					err = True
+			else:
+				print("Error: Missing scaler type")
+				err = True
 			ARGS.load = True
 		elif ARGS.data == None:
-			ARGS.data = arg
+			ARGS.data = arg[i]
 		else:
-			usage()
-			sys.exit()
-	if ARGS.help:
+			print("Error while parsing arg: ", arg[i])
+			err = True
+		i += 1
+
+	if ARGS.help or err:
 		usage()
 		sys.exit()
+
 	if ARGS.data == None:
 		ARGS.data = input("Please input your csv location: ")
+
 	return ARGS
-
-
-def stdscaler(x):
-	if len(x.shape) == 1:
-		x = x.reshape(-1, 1)
-		zs = x - x.mean()
-		zs = zs / x.std()
-	else:
-		new_array = []
-		for i in x:
-			new_array.append((i - i.mean()) / i.std)
-		zs = np.array(new_array)
-	return zs
-
-def minmaxscaler(x):
-	x = x.reshape(-1, 1)
-	min, max = np.percentile(x, [5, 95])
-	mnmx = (x - min) / (max - min)
-	return mnmx
-
-def minmax_all(x):
-	if len(x.shape) == 1 or x.shape[1] == 1:
-		mnmx = minmax(x)
-	else:
-		new_array = []
-		for i in x.T:
-			new_array.append(minmax(i).reshape(-1))
-		mnmx = np.array(new_array).T
-	return mnmx
 
 if __name__ == '__main__':
 	ARGS = DotDict({
@@ -82,6 +97,8 @@ if __name__ == '__main__':
 	'file' : False,
 	'load' : False,
 	'data' : None,
+	'scaler' : "",
+	'polynomial' : None,
 	'alpha' : 1e-3,
 	'n_cycle' : 1000000,
 	'pickle_dir' : "pickles/",
@@ -92,15 +109,12 @@ if __name__ == '__main__':
 	df = pd.read_csv(ARGS.data)
 	X = np.array(df.iloc[:, 0:-1]).reshape(-1, len(df.columns) - 1)
 	Y = np.array(df.iloc[:, -1]).reshape(-1,1)
-	# plt.scatter(X.T[0], Y)
-	# plt.show()
-	X = minmax_all(X)
-	Y = minmax_all(Y)
-	# plt.scatter(X.T[0], Y)
-	# plt.show()
-	# print(X.shape)
-	# print(Y.shape)
-	# sys.exit()
+
+	PreP_x = Preprocessing(X, scaler="minmax", polynomial=None)
+	PreP_y = Preprocessing(Y, scaler="minmax", polynomial=None)
+	X = PreP_x.data
+	Y = PreP_y.data
+
 	if ARGS.load:
 		try:
 			with open(ARGS.pickle_dir + "model" + ".pkl", 'rb') as f:
@@ -111,8 +125,12 @@ if __name__ == '__main__':
 			theta = [1] * (X.shape[1] + 1)
 	else:
 		theta = [1] * (X.shape[1] + 1)
-	lr = MyLinearRegression(theta, alpha=1e-4, n_cycle=1000000, visual=ARGS.visual)
-	# lr.fit(X, Y)
+	lr = MyLinearRegression(theta,
+							alpha=ARGS.alpha,
+							n_cycle=ARGS.n_cycle,
+							visual=ARGS.visual)
+	print(lr)
+	lr.fit(X, Y)
 
 	try:
 		with open(ARGS.pickle_dir + "model" + ".pkl", 'wb+') as f:

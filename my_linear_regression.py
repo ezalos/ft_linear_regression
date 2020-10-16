@@ -66,3 +66,12 @@ class MyLinearRegression():
 		if len(self.theta) != x.shape[1]:
 			return None
 		return x @ self.theta
+
+	def __str__(self):
+		msg = "Regression: " + "\n"
+		msg += "\ttheta: " + "\n"
+		msg += "\t\t" + str(self.theta).replace("\n", "\n\t\t") + "\n"
+		msg += "\talpha: " + str(self.alpha) + "\n"
+		msg += "\tn_cycle: " + str(self.n_cycle) + "\n"
+		msg += "\tvisual: " + str(self.visual) + "\n"
+		return msg
