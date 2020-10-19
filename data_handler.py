@@ -9,25 +9,18 @@ class DataHandler():
 	def save(self, PreP_x, PreP_y, Theta):
 		data = [PreP_x, PreP_y, Theta]
 		try:
-			with open(ARGS.pickle_dir + "model" + ".pkl", 'wb+') as f:
-				# data = lr.theta
+			save_file = self.ARGS.pickle_dir + self.ARGS.pickle_name + ".pkl"
+			with open(save_file, 'wb+') as f:
 				pickle.dump(data, f)
-				print("Model saved!")
-				print(data)
-		except Exceptions as e:
-			print("Error while saving model")
-			print("Theta: ", Theta)
-		pass
+				print("Model " + save_file + " saved!")
+		except Exception as e:
+			print("Error while saving model: ", e)
 
 	def load(self):
-		if ARGS.load:
-			try:
-				with open(ARGS.pickle_dir + "model" + ".pkl", 'rb') as f:
-					data = pickle.load(f)
-					print("Model loaded!")
-					print(theta)
-			except:
-				theta = [1] * (X.shape[1] + 1)
-		else:
-			theta = [1] * (X.shape[1] + 1)
-		return data[0], data[1], data[2]
+		try:
+			with open(self.ARGS.load, 'rb') as f:
+				data = pickle.load(f)
+				print("Model " + self.ARGS.load + " loaded!")
+			return data[0], data[1], data[2]
+		except Exception as e:
+			print("Error while loading model: ", e)

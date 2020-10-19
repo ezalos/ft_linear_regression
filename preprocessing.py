@@ -1,32 +1,14 @@
 import numpy as np
 
 class Preprocessing():
-	def __init__(self, data, scaler="", polynomial=None):
+	def __init__(self, data, scaler=False):
 		self.min = []
 		self.max = []
 		self.scaler = scaler
-		self.polynomial = polynomial
-		if scaler == "minmax":
+		if scaler:
 			self.data = self.minmax_scaler(data)
-
-	def add_polynomial_features(x, power):
-		new = []
-		new.append(x)
-		for i in range(power - 1):
-			new.append(x ** (i + 2))
-		return np.concatenate(tuple(new),axis=1)
-
-	def stdscaler(self, x):
-		if len(x.shape) == 1:
-			x = x.reshape(-1, 1)
-			zs = x - x.mean()
-			zs = zs / x.std()
 		else:
-			new_array = []
-			for i in x:
-				new_array.append((i - i.mean()) / i.std)
-			zs = np.array(new_array)
-		return zs
+			self.data = data
 
 	def minmax_elem(self, x, percent=5):
 		x = x.reshape(-1, 1)
@@ -47,18 +29,47 @@ class Preprocessing():
 			mnmx = np.array(new_array).T
 		return mnmx
 
-	def re_apply_minmax(self, data):
+
+	def unapply_minmax(self, data):
 		if self.min == [] or self.max == []:
-			# raise Exceptions()
 			return None
 
 		scaler = lambda x, min, max: x * (max - min) + min
 		if len(data.shape) == 1 or data.shape[1] == 1:
+			if len(self.min) != 1:
+				print("Error: preprocessing size do not fit data size")
+				return None
 			mnmx = scaler(data, self.min[0], self.max[0])
 		else:
+			if len(self.min) != len(data.T):
+				print("Error: preprocessing size do not fit data size")
+				return None
 			new_array = []
-			for i in data.T:
-				elem = scaler(data, self.min[i], self.max[i])
+			for idx, val in enumerate(data.T):
+				elem = scaler(val, self.min[idx], self.max[idx])
+				new_array.append(elem.reshape(-1))
+			mnmx = np.array(new_array).T
+		return mnmx
+
+	def re_apply_minmax(self, data):
+		if self.min == [] or self.max == []:
+			return None
+
+		# scaler = lambda x, min, max: x * (max - min) + min
+		print("Re-applying minmax preprocessing, as the one used for training")
+		scaler = lambda x, min, max: (x - min) / (max - min)
+		if len(data.shape) == 1 or data.shape[1] == 1:
+			if len(self.min) != 1:
+				print("Error: preprocessing size do not fit data size")
+				return None
+			mnmx = scaler(data, self.min[0], self.max[0])
+		else:
+			if len(self.min) != len(data.T):
+				print("Error: preprocessing size do not fit data size")
+				return None
+			new_array = []
+			for idx, val in enumerate(data.T):
+				elem = scaler(val, self.min[idx], self.max[idx])
 				new_array.append(elem.reshape(-1))
 			mnmx = np.array(new_array).T
 		return mnmx

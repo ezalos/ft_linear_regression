@@ -1,37 +1,49 @@
 import sys
-
-def usage():
-	usage_message = ""
-	usage_message += "usage: " + "python3 " + sys.argv[0] + " "
-	usage_message += " [-v or --visual] "
-	usage_message += " [-h or --help] "
-	usage_message += " [-f or --file] "
-	usage_message += "\"path/data.csv\""
-	print(usage_message)
-
-def arg_pase(av):
-	arg_dic = {
-		help : False,
-		visual : False,
-		equation : None,
-	}
-	for arg in av:
-		if arg == "-v" or arg == "--visual":
-			arg_dic['visual'] = True
-		elif arg == "-h" or arg == "--help":
-			arg_dic['help'] = True
-		else:
-			arg_dic['equation'] = True
-	if help:
-		usage()
-		sys.exit()
-	elif equation == None:
-		equation = input("Please input your equation: ")
-	return equation, visual
-
+import pandas as pd
+import numpy as np
+import pickle
+from my_linear_regression import MyLinearRegression
+from preprocessing import Preprocessing
+import matplotlib.pyplot as plt
+from data_handler import DataHandler
+from arg_parse import arg_parse_predict, DotDict
 
 if __name__ == '__main__':
-	equation, visual = arg_pase(sys.argv[1:])
-	with open('model.bin', 'rb') as f:
-		theta = pickle.load(f) 
-	ComputorV1(equation, visual)
+	ARGS = DotDict({
+	'help' : False,
+	'visual' : False,
+	'load' : "",
+	'data' : None,
+	'values' : None,
+	'pickle_dir' : "pickles/",
+	'pickle_name' : "model",
+	'alpha' : 1e-3,
+	'n_cycle' : 100000,
+	})
+
+	ARGS = arg_parse_predict(sys.argv[1:], ARGS)
+
+	if ARGS.data:
+		df = pd.read_csv(ARGS.data)
+		X = np.array(df.iloc[:, 0:-1]).reshape(-1, len(df.columns) - 1)
+		Y = np.array(df.iloc[:, -1]).reshape(-1,1)
+	else:
+		X = ARGS["values"]
+	if ARGS.load:
+		pkl = DataHandler(ARGS)
+		PreP_x, PreP_y, theta = pkl.load()
+		X = PreP_x.re_apply_minmax(X)
+		if type(X) == type(None):
+			sys.exit()
+	else:
+		theta = [0] * (X.shape[1] + 1)
+		print(theta)
+
+	lr = MyLinearRegression(theta, visual=ARGS.visual)
+	value = lr.predict(X)
+	print("Predicted value(s):\n", value)
+	if ARGS.load:
+		print("\twithout preprocessing:\n", PreP_y.unapply_minmax(value))
+
+	if ARGS.visual:
+		lr.plot_results(X, Y)

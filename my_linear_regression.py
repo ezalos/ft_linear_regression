@@ -25,7 +25,8 @@ class MyLinearRegression():
 		return gradient
 
 	def plot_results(self, x, y):
-		if x.shape[0] +1 != self.theta.shape[1]:
+		if x.shape[1] +1 != self.theta.shape[0]:
+			print(x.shape, self.theta.shape)
 			print("Error: Theta dimension dont fit with X")
 			return None
 		self.plot.plot_results(x, y, self.predict(x), self.theta)
@@ -43,7 +44,8 @@ class MyLinearRegression():
 		# print(self.cost[-1])
 
 	def fit(self, x, y):
-		if x.shape[0] +1 != self.theta.shape[1]:
+		if x.shape[1] +1 != self.theta.shape[0]:
+			print(x.shape, self.theta.shape)
 			print("Error: Theta dimension dont fit with X")
 			return None
 		update = self.n_cycle // 100
@@ -53,6 +55,10 @@ class MyLinearRegression():
 		x_ = add_intercept(x)
 		for i in ft_progress(self.n_cycle + 1):
 			if not i % (update * 5):
+				if np.isnan(self.theta).any():
+					print("\nError: Theta has NaN values.\
+\nTry with a smaller alpha or apply preprocessing to data")
+					return None
 				self.fit_routine(x, y, i)
 			theta_ = self.gradient(x_, y) * self.alpha
 			self.theta = self.theta - theta_
@@ -66,7 +72,8 @@ class MyLinearRegression():
 		return abs(res)
 
 	def predict(self, x):
-		if x.shape[0] +1 != self.theta.shape[1]:
+		if x.shape[1] +1 != self.theta.shape[0]:
+			print(x.shape, self.theta.shape)
 			print("Error: Theta dimension dont fit with X")
 			return None
 		if len(x) == 0:
