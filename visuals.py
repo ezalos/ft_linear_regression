@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib
 import numpy as np
 import math
 import random
@@ -100,12 +101,17 @@ class PlotMyLinearRegression():
 		self.fig, axs = plt.subplots(plot_dim[0], plot_dim[1],
 						figsize=[4 * plot_dim[1], 4 * plot_dim[0]])
 		self.axs = []
-		for sublist in axs:
-			for item in sublist:
-				self.axs.append(item)
+		try:
+			for sublist in axs:
+				try:
+					for item in sublist:
+						self.axs.append(item)
+				except:
+					self.axs.append(sublist)
+		except:
+			self.axs.append(axs)
 
 		#Plot data points
-		print(x.T.shape)
 		for i, feature in enumerate(x.T):
 			# print(i.shape)
 			artist_fig = self.axs[i].scatter(feature, y_, s=1, c='r', label="h(x)")

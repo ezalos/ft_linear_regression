@@ -5,6 +5,7 @@ import pickle
 from my_linear_regression import MyLinearRegression
 from preprocessing import Preprocessing
 import matplotlib.pyplot as plt
+from data_handler import DataHandler
 
 class DotDict(dict):
 	"""
@@ -54,7 +55,7 @@ def arg_parse(arg, ARGS):
 			i += 1
 			if i < ac:
 				try:
-					ARGS.n_cycle = int(arg[i])
+					ARGS.n_cycle = int(float(arg[i]))
 				except:
 					err = True
 					print("Error, n_cycle must be int: ", arg[i])
@@ -100,7 +101,7 @@ if __name__ == '__main__':
 	'scaler' : "",
 	'polynomial' : None,
 	'alpha' : 1e-3,
-	'n_cycle' : 1000000,
+	'n_cycle' : 100000,
 	'pickle_dir' : "pickles/",
 	})
 
@@ -110,21 +111,17 @@ if __name__ == '__main__':
 	X = np.array(df.iloc[:, 0:-1]).reshape(-1, len(df.columns) - 1)
 	Y = np.array(df.iloc[:, -1]).reshape(-1,1)
 
-	PreP_x = Preprocessing(X, scaler="minmax", polynomial=None)
-	PreP_y = Preprocessing(Y, scaler="minmax", polynomial=None)
-	X = PreP_x.data
-	Y = PreP_y.data
-
+	pkl = DataHandler(ARGS)
 	if ARGS.load:
-		try:
-			with open(ARGS.pickle_dir + "model" + ".pkl", 'rb') as f:
-				theta = pickle.load(f)
-				print("Model loaded!")
-				print(theta)
-		except:
-			theta = [1] * (X.shape[1] + 1)
+		PreP_x, PreP_y, theta = pkl.load(PreP_x, PreP_y, lr.theta)
+		X = PreP_x.re_apply_minmax(X)
+		Y = PreP_Y.re_apply_minmax(Y)
 	else:
-		theta = [1] * (X.shape[1] + 1)
+		PreP_x = Preprocessing(X, scaler="minmax", polynomial=None)
+		PreP_y = Preprocessing(Y, scaler="minmax", polynomial=None)
+		X = PreP_x.data
+		Y = PreP_y.data
+
 	lr = MyLinearRegression(theta,
 							alpha=ARGS.alpha,
 							n_cycle=ARGS.n_cycle,
@@ -132,16 +129,6 @@ if __name__ == '__main__':
 	print(lr)
 	lr.fit(X, Y)
 
-	try:
-		with open(ARGS.pickle_dir + "model" + ".pkl", 'wb+') as f:
-			data = lr.theta
-			theta = pickle.dump(data, f)
-			print("Model saved!")
-			print(data)
-	except Exceptions as e:
-		print("Error while saving model")
-		print("Theta: ", lr.theta)
-
+	pkl.save(PreP_x, PreP_y, lr.theta)
 	if ARGS.visual:
-		plt.ioff()
 		lr.plot_results(X, Y)
