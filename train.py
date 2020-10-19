@@ -25,7 +25,11 @@ if __name__ == '__main__':
 
 	ARGS = arg_parse_train(sys.argv[1:], ARGS)
 
-	df = pd.read_csv(ARGS.data)
+	try:
+		df = pd.read_csv(ARGS.data)
+	except Exception as e:
+		print("Error, path to data is incorrect: ", ARGS.data)
+		sys.exit()
 	X = np.array(df.iloc[:, 0:-1]).reshape(-1, len(df.columns) - 1)
 	Y = np.array(df.iloc[:, -1]).reshape(-1,1)
 

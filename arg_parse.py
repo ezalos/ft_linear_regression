@@ -24,6 +24,12 @@ def usage_train():
 	usage_message += "\n\t\t" + " [-l or --load AND '/path/to_model.pkl'] "
 	usage_message += "\n\t\t" + " [-m or --model AND 'saved_model_name'] "
 	usage_message += "\n\t\t" + "\"path/data.csv\""
+	usage_message += "\n\n" + "Options details: "
+	usage_message += "\n\t" + "scaler: " + "will apply minmax to data"
+	usage_message += "\n\t" + "load:   " + "will load theta and preprocessing "
+	usage_message += "from file and apply them. It ignore sacler option."
+	usage_message += "\n\t" + "model:  " + "Default value is pickles/model.pkl"
+
 	print(usage_message)
 
 def arg_parse_train(arg, ARGS):
