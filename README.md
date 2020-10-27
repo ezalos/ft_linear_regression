@@ -1,7 +1,7 @@
 # ft_linear_regression
 
 This project implement Linear Regression on multivariate data
-![](assets/demo.gif)
+![](assets/graph_demo.gif)
 
 ## Getting Started
 
