@@ -21,27 +21,19 @@ class MyLinearRegression():
 	def gradient(self, x, y):
 		m = x.shape[0]
 		gradient = (x.T @ ((x @ self.theta) - y)) / m
-		# print(gradient)
 		return gradient
 
 	def plot_results(self, x, y):
-		if x.shape[1] +1 != self.theta.shape[0]:
+		if x.shape[1] + 1 != self.theta.shape[0]:
 			print(x.shape, self.theta.shape)
 			print("Error: Theta dimension dont fit with X")
 			return None
-		self.plot.plot_results(x, y, self.predict(x), self.theta)
+		y_ = self.predict(x)
+		self.plot.plot_results(x, y, y_, self.theta)
 
 	def fit_routine(self, x, y, i):
-		# print(i * 100 / self.n_cycle, "%")
-		# if x.shape[1] > 1:
-		# if not i % (update * 5):
 		if self.visual:
 			self.plot.multi_plot(x, y, self.predict(x), self.theta, self.cost)
-		# else:
-		# 	self.plot(x, y)
-		# print(self.theta)
-
-		# print(self.cost[-1])
 
 	def fit(self, x, y):
 		if x.shape[1] +1 != self.theta.shape[0]:

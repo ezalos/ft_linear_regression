@@ -1,4 +1,5 @@
 import pickle
+import sys
 
 
 class DataHandler():
@@ -24,3 +25,4 @@ class DataHandler():
 			return data[0], data[1], data[2]
 		except Exception as e:
 			print("Error while loading model: ", e)
+			sys.exit()
