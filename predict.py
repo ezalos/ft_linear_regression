@@ -35,6 +35,7 @@ if __name__ == '__main__':
 			Y = np.zeros_like(X)
 	else:
 		X = ARGS["values"]
+		Y = np.zeros_like(X)
 	if ARGS.load:
 		pkl = DataHandler(ARGS)
 		PreP_x, PreP_y, theta = pkl.load()
