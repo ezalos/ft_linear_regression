@@ -10,6 +10,8 @@ This project implement Linear Regression on multivariate data
 
 ## Getting Started
 
+You need `python3.7`.
+
 * ```pip3 install requirements.txt --user```
   * Each package can also be installed with the following commands:
     * ```pip3 install numpy --user```
